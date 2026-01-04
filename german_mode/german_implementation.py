@@ -54,7 +54,7 @@ _ascii_trans = str.maketrans(_ascii_replace)
 
 
 
-@ctx.capture("user.wort", rule='({user.number_key}+ | <user.vocabulary_german> | <word>)')
+@ctx.capture("user.wort", rule='({user.number_key}+ | {user.german_vocabulary} | <word>)')
 def wort(m) -> str:
     """word or spelled word or number, inserts space in the end"""
     return ''.join(str(m).split()) + ' '
@@ -120,7 +120,7 @@ def satz(m) -> str:
 
     # putting grammar-based correction at the end can result in explicit lowercase
     # words to be (wrongly) uppercased
-    # print(f"Before spaCyFix: '{result}'")
+    print(f"Before spaCyFix: '{result}'")
     if use_spacy and spaCyFix:
         return spaCyFix.transform(result)
     else:
