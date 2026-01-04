@@ -13,7 +13,7 @@ language: de_DE
 # dictionary for capitalization (set of lowercase words that should be capitalized)
 here = Path(__file__).resolve().parent
 german_dict = here / "dictionary" / "german.dic"
-capitalized_words = None
+capitalized_words: set[str] = set()
 with open(german_dict, "r", encoding="utf-8") as dict:
     capitalized_words = {word.strip().lower() for word in dict if word[0].isupper()}
 
@@ -45,7 +45,11 @@ def join_compounds(parts: List[str], compound_set: Set[str]) -> List[str]:
 
 _space_after = ".,!?:;)]}–“‘$£€"
 _no_space_before = ".,-!?:;)]}␣“‘’$£€"
+_no_space_after = "„‚(-\n␣"
+
+# characters to replace if ASCII punctuation is desired
 _ascii_replace = {'–': '-', '„': '"', '“': '"', "‚": "'", "‘": "'", "’": "'"}
+_ascii_trans = str.maketrans(_ascii_replace)
 
 
 
@@ -132,4 +136,17 @@ def weg(m) -> str:
 
 @ctx.capture("user.acronym", rule="{user.letter}+")
 def acronym(m: str) -> str:
-    return "".join(m.letter_list).upper()
+    return "".join(m.letter_list).upper() # pyright: ignore[reportAttributeAccessIssue]
+
+@ctx.action_class("user")
+class Actions:
+    def omit_space_before(text: str) -> bool:
+        return bool(not text or text[0] in _no_space_before)
+
+    def omit_space_after(text: str) -> bool:
+        return bool(not text or text[-1] in _no_space_after)
+    
+    def dictation_replace(text: str) -> str:
+        if settings.get("user.german_unicode"):
+            return text
+        return text.translate(_ascii_trans)
