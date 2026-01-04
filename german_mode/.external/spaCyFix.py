@@ -27,8 +27,9 @@ def process_phrase(text: str) -> str:
 
     out_tokens = []
     # Capitalize nouns and proper nouns; preserve original token spacing
+    # (preserve capitalization of already capitalized words, e.g. Nordrhein-Westfalen)
     for token in tagged_phrase:
-        if token.pos_ in ["NOUN", "PROPN"]:
+        if token.pos_ in ["NOUN", "PROPN"] and not token.text[0].isupper():
             tok_text = token.text.capitalize()
         else:
             tok_text = token.text
